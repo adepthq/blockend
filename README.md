@@ -10,3 +10,9 @@ A simple experiment of creating a backend that connects and syncs data from a bl
 - ExpressJS
 - SocketIO
 - Docker
+
+### Setting up the project
+Guide coming soon
+
+### Contributions
+Guide coming soon
