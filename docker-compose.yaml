@@ -17,6 +17,23 @@ services:
       - blockheads
     depends_on:
       - mongo
+  indexer:
+    build:
+      context: .
+      dockerfile: DockerfileIndexer
+    image: blockend-indexer
+    container_name: blockend-indexer
+    restart: unless-stopped
+    working_dir: /code
+    env_file: .env
+    ports:
+      - 3002:3002
+    volumes:
+      - ./:/code
+    networks:
+      - blockheads
+    depends_on:
+      - mongo
   mongo:
     image: mongo
     restart: unless-stopped
