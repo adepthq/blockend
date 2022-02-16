@@ -1,7 +1,9 @@
 import express, { Request, Response } from 'express';
+import { Database } from './config';
 
 const app = express();
 
+console.log(Database);
 app.get('/', (_: Request, res: Response): void => {
   res.json({ message: 'Hello World' });
 });
