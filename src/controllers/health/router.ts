@@ -3,12 +3,8 @@ import express, { Response, Request } from 'express';
 const router = express.Router();
 
 router.use('/:route', (req: Request, res: Response) => {
-  let { route } = req.params;
+  const { route } = req.params;
   console.log(`[${req.method}] ${route}`);
-
-  if (route === '') {
-    route = 'index';
-  }
 
   // eslint-disable-next-line global-require
   const controller = require(`./${route}`);
