@@ -15,6 +15,7 @@
   "dependencies": {
     "chalk": "^5.0.0",
     "dotenv": "^16.0.0",
+    "ethers": "^5.5.4",
     "express": "^4.17.2",
     "moment": "^2.29.1",
     "mongodb": "^4.3.1",
