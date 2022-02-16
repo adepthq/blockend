@@ -1,4 +1,4 @@
 export default {
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
+  host: process.env.MONGODB_USERNAME,
+  port: process.env.MONGODB_PASSWORD,
 };

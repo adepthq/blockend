@@ -32,6 +32,8 @@ module.exports = {
         ],
       },
     ],
+    'import/no-dynamic-require': 'off',
+    '@typescript-eslint/no-var-requires': 'off',
   },
   settings: {
     'import/resolver': {
