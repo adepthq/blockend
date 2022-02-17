@@ -26,30 +26,61 @@ const logScraper = async (
   return logScraper(readOnlyContract, eventFilter, firstBlock + 500, lastBlock, logs.concat(blockLogs));
 };
 
-const processToken = async (tokenIds: BigNumber[]): Promise<CharacterModel[]> => {
-  const characters = [];
+// const processToken = async (tokenIds: BigNumber[]): Promise<CharacterModel[]> => {
+//   const characters = [];
 
-  // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < tokenIds.length; i++) {
-    const tokenId = tokenIds[i];
-    console.log(`Processing tokenId: ${tokenId}`);
+//   // eslint-disable-next-line no-plusplus
+//   for (let i = 0; i < tokenIds.length; i++) {
+//     const tokenId = tokenIds[i];
+//     console.log(`Processing tokenId: ${tokenId}`);
 
-    // eslint-disable-next-line no-await-in-loop
-    const character = await Character.getCharacter(tokenId);
-    if (character) {
-      console.log(`Character already exists: ${character.tokenId}`);
-      // eslint-disable-next-line no-continue
-      continue;
-    }
+//     // eslint-disable-next-line no-await-in-loop
+//     const character = await Character.getCharacter(tokenId);
+//     if (character) {
+//       console.log(`Character already exists: ${character.tokenId}`);
+//       // eslint-disable-next-line no-continue
+//       continue;
+//     }
 
-    // Create the metadata for the token
-    console.log(`No Record of character: ${tokenId}`);
-    // eslint-disable-next-line no-await-in-loop
-    const newCharacter = await Character.generateCharacterMetaData(tokenId);
-    characters.push(newCharacter);
+//     // Create the metadata for the token
+//     console.log(`No Record of character: ${tokenId}`);
+//     // eslint-disable-next-line no-await-in-loop
+//     const newCharacter = await Character.generateCharacterMetaData(tokenId);
+//     characters.push(newCharacter);
+//   }
+
+//   return characters;
+// };
+
+const processTokenRecursively = async (
+  tokenIds: BigNumber[],
+  characters: CharacterModel[]
+): Promise<CharacterModel[]> => {
+  if (tokenIds.length === 0) {
+    return characters;
   }
 
-  return characters;
+  const tokenId = tokenIds.pop();
+  console.log(`Processing tokenId: ${tokenId}`);
+
+  if (!tokenId) {
+    return processTokenRecursively(tokenIds, characters);
+  }
+
+  const character = await Character.getCharacter(tokenId);
+  if (character) {
+    console.log(`Character already exists: ${character.tokenId}`);
+    return processTokenRecursively(tokenIds, characters);
+  }
+
+  // Create the metadata for the token
+  console.log(`No Record of character: ${tokenId}`);
+  console.log(`Generating Meta for Character: ${tokenId}`);
+
+  const newCharacter = await Character.generateCharacterMetaData(tokenId);
+  characters.push(newCharacter);
+
+  return processTokenRecursively(tokenIds, characters);
 };
 
 const main = async () => {
@@ -77,9 +108,11 @@ const main = async () => {
   //   const tokenId = log.args?.tokenId;
   //   console.log(`Processing tokenId: ${tokenId}`);
 
-  const characters = await processToken(tokenIds);
+  const characters = await processTokenRecursively(tokenIds, []);
   console.log(`Saving ${characters.length} new characters`);
-  await Character.saveCharacters(characters);
+  if (characters.length > 0) {
+    await Character.saveCharacters(characters);
+  }
 
   // }
 
