@@ -1,4 +1,5 @@
 import { Collection } from 'mongodb';
+import { BigNumber } from 'ethers';
 import {
   CharacterType,
   CharacterRarity,
@@ -10,10 +11,10 @@ import {
 } from '../models/character';
 import mongoclient from '../lib/mongoclient';
 
-const getDBCollection = async (): Promise<Collection> => {
+const getDBCollection = async (): Promise<Collection<Character>> => {
   const client = await mongoclient.connect();
   const db = client.db('blockheads');
-  const collection = db.collection('characters');
+  const collection = db.collection<Character>('characters');
 
   return collection;
 };
@@ -78,7 +79,7 @@ const getCharacterStats = async (
   };
 };
 
-const generateCharacterMetaData = async (tokenId: number): Promise<Character> => {
+const generateCharacterMetaData = async (tokenId: BigNumber): Promise<Character> => {
   const type = getCharacterType();
   const rarity = getCharacterRarity();
   const classType = getCharacterClass();
@@ -88,7 +89,7 @@ const generateCharacterMetaData = async (tokenId: number): Promise<Character> =>
   console.log(`Generating Character for tokenId: ${tokenId} - ${type}`);
 
   const character: Character = {
-    tokenId,
+    tokenId: tokenId.toNumber(),
     type,
     rarity,
     class: classType,
@@ -106,6 +107,14 @@ const generateCharacterMetaData = async (tokenId: number): Promise<Character> =>
   };
 };
 
+const getCharacter = async (tokenId: BigNumber): Promise<Character | null> => {
+  const collection = await getDBCollection();
+  const character = await collection.findOne({ tokenId: tokenId.toNumber() });
+
+  return character;
+};
+
 export default {
   generateCharacterMetaData,
+  getCharacter,
 };
