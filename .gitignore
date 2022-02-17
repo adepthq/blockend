@@ -129,4 +129,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+
+# ignore yarn.lock
+yarn.lock
+
 .DS_Store
