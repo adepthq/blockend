@@ -11,7 +11,6 @@ const connect = async (): Promise<MongoClient> => {
   const { username, password, host, port } = Database;
 
   const uri = `mongodb://${username}:${password}@${host}:${port}/`;
-  console.log(`Connecting to ${uri}`);
   client = new MongoClient(uri);
 
   return client.connect();
