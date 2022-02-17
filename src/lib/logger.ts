@@ -1,4 +1,5 @@
 import winston from 'winston';
+import 'winston-daily-rotate-file';
 
 /** Log levels */
 const levels = {
@@ -35,6 +36,14 @@ const format = winston.format.combine(
   winston.format.printf(info => `${info.timestamp} ${info.level} ${info.message}`)
 );
 
+const transport = new winston.transports.DailyRotateFile({
+  filename: 'logs/application-%DATE%.log',
+  datePattern: 'YYYY-MM-DD-HH',
+  zippedArchive: true,
+  maxSize: '20m',
+  maxFiles: '14d',
+});
+
 /** Log Transport */
 const transports = [
   new winston.transports.Console(),
@@ -42,9 +51,7 @@ const transports = [
     filename: 'logs/error.log',
     level: 'error',
   }),
-  new winston.transports.File({
-    filename: 'logs/all.log',
-  }),
+  transport,
 ];
 
 /** Main Logger */
