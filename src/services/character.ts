@@ -79,39 +79,53 @@ const getCharacterStats = async (
   };
 };
 
-const generateCharacterMetaData = async (tokenId: BigNumber): Promise<Character> => {
-  const type = getCharacterType();
-  const rarity = getCharacterRarity();
-  const classType = getCharacterClass();
+const generateCharacterMetaData = async (tokenId: BigNumber): Promise<Character | null> => {
+  try {
+    const type = getCharacterType();
+    const rarity = getCharacterRarity();
+    const classType = getCharacterClass();
 
-  const stats: CharacterStats = await getCharacterStats(rarity, classType);
+    const stats: CharacterStats = await getCharacterStats(rarity, classType);
 
-  console.log(`Generating Character for tokenId: ${tokenId} - ${type}`);
+    console.log(`Generating Character for tokenId: ${tokenId} - ${type}`);
 
-  const character: Character = {
-    tokenId: tokenId.toNumber(),
-    type,
-    rarity,
-    class: classType,
-    stats,
-  };
+    const character: Character = {
+      tokenId: tokenId.toNumber(),
+      type,
+      rarity,
+      class: classType,
+      stats,
+    };
 
-  const collection = await getDBCollection();
-  const newCharacter = await collection.insertOne(character);
+    const collection = await getDBCollection();
+    const newCharacter = await collection.insertOne(character);
 
-  console.log(`New Character: ${newCharacter.insertedId}`);
+    console.log(`New Character: ${newCharacter.insertedId}`);
 
-  return {
-    ...character,
-    _id: newCharacter.insertedId,
-  };
+    return {
+      ...character,
+      _id: newCharacter.insertedId,
+    };
+  } catch (error) {
+    console.error(error);
+    return null;
+  } finally {
+    mongoclient.disconnect();
+  }
 };
 
 const getCharacter = async (tokenId: BigNumber): Promise<Character | null> => {
-  const collection = await getDBCollection();
-  const character = await collection.findOne({ tokenId: tokenId.toNumber() });
+  try {
+    const collection = await getDBCollection();
+    const character = await collection.findOne({ tokenId: tokenId.toNumber() });
 
-  return character;
+    return character;
+  } catch (error) {
+    console.error(error);
+    return null;
+  } finally {
+    mongoclient.disconnect();
+  }
 };
 
 export default {

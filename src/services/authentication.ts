@@ -14,11 +14,18 @@ const getDBCollection = async (): Promise<Collection> => {
 };
 
 const findUserByWalletAddress = async (walletAddress: string): Promise<User | null> => {
-  const collection = await getDBCollection();
+  try {
+    const collection = await getDBCollection();
 
-  const user = (await collection.findOne({ walletAddress })) as User;
+    const user = (await collection.findOne({ walletAddress })) as User;
 
-  return user;
+    return user;
+  } catch (error) {
+    console.log(error);
+    return null;
+  } finally {
+    mongoclient.disconnect();
+  }
 };
 
 const createUser = async (user: User): Promise<User> => {

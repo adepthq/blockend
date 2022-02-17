@@ -5,7 +5,7 @@ let client: MongoClient | null = null;
 
 const connect = async (): Promise<MongoClient> => {
   if (client) {
-    return client;
+    client.close();
   }
 
   const { username, password, host, port } = Database;
