@@ -10,6 +10,7 @@ import {
   CharacterStatsMinMax,
 } from '../models/character';
 import mongoclient from '../lib/mongoclient';
+import Logger from '../lib/logger';
 
 const getDBCollection = async (): Promise<Collection<Character>> => {
   const client = await mongoclient.connect();
@@ -65,7 +66,7 @@ const getCharacterStats = async (
   characterRarity: CharacterRarity[keyof CharacterRarity],
   characterClass: CharacterClass[keyof CharacterClass]
 ): Promise<CharacterStats> => {
-  console.log(`Generating Character Stats for ${characterRarity} ${characterClass}`);
+  Logger.info(`Generating Character Stats for ${characterRarity} ${characterClass}`);
 
   // eslint-disable-next-line dot-notation
   const statsData: CharacterStatsMinMax = statsTree[characterRarity.toString()][characterClass.toString()];
@@ -86,7 +87,7 @@ const generateCharacterMetaData = async (tokenId: BigNumber): Promise<Character>
 
   const stats: CharacterStats = await getCharacterStats(rarity, classType);
 
-  console.log(`Generating Character for tokenId: ${tokenId} - ${type}`);
+  Logger.info(`Generating Character for tokenId: ${tokenId} - ${type}`);
 
   const character: Character = {
     tokenId: tokenId.toNumber(),
@@ -106,9 +107,9 @@ const saveCharacters = async (characters: Character[]): Promise<Character[]> => 
     const collection = await getDBCollection();
     const newCharacters = await collection.insertMany(characters);
 
-    console.log(`New Characters Created: `, newCharacters.insertedCount);
+    Logger.info(`New Characters Created: `, newCharacters.insertedCount);
   } catch (error) {
-    console.log(error);
+    Logger.info(error);
     throw new Error("Couldn't save characters");
   } finally {
     mongoclient.disconnect();
