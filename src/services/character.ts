@@ -96,25 +96,42 @@ const generateCharacterMetaData = async (tokenId: BigNumber): Promise<Character>
     stats,
   };
 
-  const collection = await getDBCollection();
-  const newCharacter = await collection.insertOne(character);
-
-  console.log(`New Character: ${newCharacter.insertedId}`);
-
   return {
     ...character,
-    _id: newCharacter.insertedId,
   };
 };
 
-const getCharacter = async (tokenId: BigNumber): Promise<Character | null> => {
-  const collection = await getDBCollection();
-  const character = await collection.findOne({ tokenId: tokenId.toNumber() });
+const saveCharacters = async (characters: Character[]): Promise<Character[]> => {
+  try {
+    const collection = await getDBCollection();
+    const newCharacters = await collection.insertMany(characters);
 
-  return character;
+    console.log(`New Characters Created: `, newCharacters.insertedCount);
+  } catch (error) {
+    console.log(error);
+    throw new Error("Couldn't save characters");
+  } finally {
+    mongoclient.disconnect();
+  }
+
+  return characters;
+};
+
+const getCharacter = async (tokenId: BigNumber): Promise<Character | null> => {
+  try {
+    const collection = await getDBCollection();
+    const character = await collection.findOne({ tokenId: tokenId.toNumber() });
+
+    return character;
+  } catch (error) {
+    return null;
+  } finally {
+    mongoclient.disconnect();
+  }
 };
 
 export default {
   generateCharacterMetaData,
   getCharacter,
+  saveCharacters,
 };
