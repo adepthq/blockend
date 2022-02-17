@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import AuthService from '../../services/authentication';
+import Logger from '../../lib/logger';
 
 type LoginArgs = {
   walletAddress: string;
 };
 
 const LoginController = async (req: Request, res: Response) => {
-  console.log('LoginController');
+  Logger.info('LoginController');
   const params: LoginArgs = req.body.input;
 
   const user = await AuthService.authenticate(params.walletAddress);
