@@ -1,6 +1,7 @@
 import { BigNumber, ethers, EventFilter, Event } from 'ethers';
-import { Character as CharacterModel } from 'models/character';
+import { Character as CharacterModel } from '../models/character';
 import { Blockchain } from '../config';
+import Logger from '../lib/logger';
 import Character from './character';
 
 const characterAddress = Blockchain.characterNFTAddress;
@@ -20,37 +21,11 @@ const logScraper = async (
     return logs;
   }
 
-  console.log(`Scraping block ${firstBlock} - ${firstBlock + 500}`);
+  Logger.info(`Scraping block ${firstBlock} - ${firstBlock + 500}`);
   const blockLogs = await readOnlyContract.queryFilter(eventFilter, firstBlock, firstBlock + 500);
 
   return logScraper(readOnlyContract, eventFilter, firstBlock + 500, lastBlock, logs.concat(blockLogs));
 };
-
-// const processToken = async (tokenIds: BigNumber[]): Promise<CharacterModel[]> => {
-//   const characters = [];
-
-//   // eslint-disable-next-line no-plusplus
-//   for (let i = 0; i < tokenIds.length; i++) {
-//     const tokenId = tokenIds[i];
-//     console.log(`Processing tokenId: ${tokenId}`);
-
-//     // eslint-disable-next-line no-await-in-loop
-//     const character = await Character.getCharacter(tokenId);
-//     if (character) {
-//       console.log(`Character already exists: ${character.tokenId}`);
-//       // eslint-disable-next-line no-continue
-//       continue;
-//     }
-
-//     // Create the metadata for the token
-//     console.log(`No Record of character: ${tokenId}`);
-//     // eslint-disable-next-line no-await-in-loop
-//     const newCharacter = await Character.generateCharacterMetaData(tokenId);
-//     characters.push(newCharacter);
-//   }
-
-//   return characters;
-// };
 
 const processTokenRecursively = async (
   tokenIds: BigNumber[],
@@ -61,7 +36,7 @@ const processTokenRecursively = async (
   }
 
   const tokenId = tokenIds.pop();
-  console.log(`Processing tokenId: ${tokenId}`);
+  Logger.info(`Processing tokenId: ${tokenId}`);
 
   if (!tokenId) {
     return processTokenRecursively(tokenIds, characters);
@@ -69,13 +44,13 @@ const processTokenRecursively = async (
 
   const character = await Character.getCharacter(tokenId);
   if (character) {
-    console.log(`Character already exists: ${character.tokenId}`);
+    Logger.info(`Character already exists: ${character.tokenId}`);
     return processTokenRecursively(tokenIds, characters);
   }
 
   // Create the metadata for the token
-  console.log(`No Record of character: ${tokenId}`);
-  console.log(`Generating Meta for Character: ${tokenId}`);
+  Logger.info(`No Record of character: ${tokenId}`);
+  Logger.info(`Generating Meta for Character: ${tokenId}`);
 
   const newCharacter = await Character.generateCharacterMetaData(tokenId);
   characters.push(newCharacter);
@@ -84,7 +59,7 @@ const processTokenRecursively = async (
 };
 
 const main = async () => {
-  console.log('Indexer Started');
+  Logger.info('Indexer Started');
   const readOnlyContract = new ethers.Contract(characterAddress, characterABI, provider);
 
   // crawl the smart contract and get all the tokenIds
@@ -95,22 +70,14 @@ const main = async () => {
   const lastBlock = 24998997;
   const logs = await logScraper(readOnlyContract, eventFilter, firstBlock, lastBlock, []);
 
-  console.log(`Found ${logs.length} new block heads`);
+  Logger.info(`Found ${logs.length} new block heads`);
   const tokenIds = logs.map(i => i.args?.tokenId);
-  console.log(`Found ${tokenIds.length} new tokenIds`);
-  console.log(tokenIds);
-
-  // eslint-disable-next-line no-plusplus
-  // for (let i = 0; i < logs.length; i++) {
-  //   const log = logs[i];
-
-  //   // eslint-disable-next-line prefer-destructuring
-  //   const tokenId = log.args?.tokenId;
-  //   console.log(`Processing tokenId: ${tokenId}`);
+  Logger.info(`Found ${tokenIds.length} new tokenIds`);
 
   const characters = await processTokenRecursively(tokenIds, []);
-  console.log(`Saving ${characters.length} new characters`);
+
   if (characters.length > 0) {
+    Logger.info(`Saving ${characters.length} new characters`);
     await Character.saveCharacters(characters);
   }
 
@@ -118,7 +85,7 @@ const main = async () => {
 
   // listen to events
   readOnlyContract.on('NewBlockHeadCreated', (owner: string, tokenId: BigNumber) => {
-    console.log(`NewBlockHeadCreated: ${owner} ${tokenId}`);
+    Logger.info(`NewBlockHeadCreated: ${owner} ${tokenId}`);
     // Create the metadata for the token and store to mongodb
     Character.generateCharacterMetaData(tokenId);
   });
