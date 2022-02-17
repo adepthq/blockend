@@ -2,12 +2,10 @@ import express, { Request, Response } from 'express';
 // Routes
 import health from './controllers/health/router';
 import auth from './controllers/auth/router';
-import Logger from '@lib/logger';
 
 const app = express();
 
 app.get('/', (_: Request, res: Response): void => {
-  Logger.info('Hello World!');
   res.json({ message: 'Hello World' });
 });
 

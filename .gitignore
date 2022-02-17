@@ -130,7 +130,4 @@ dist
 .pnp.*
 
 
-# ignore yarn.lock
-yarn.lock
-
 .DS_Store
