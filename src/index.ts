@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 // Routes
-// import health from './controllers/health/router';
-// import auth from './controllers/auth/router';
+import health from './controllers/health/router';
+import auth from './controllers/auth/router';
 import Logger from '@lib/logger';
 
 const app = express();
@@ -11,8 +11,8 @@ app.get('/', (_: Request, res: Response): void => {
   res.json({ message: 'Hello World' });
 });
 
-// app.use('/v1/health', health);
-// app.use('/v1/auth', auth);
+app.use('/v1/health', health);
+app.use('/v1/auth', auth);
 
 /** 404 Handling */
 app.use((_: Request, res: Response) => {
