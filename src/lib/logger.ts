@@ -1,5 +1,5 @@
 import winston from 'winston';
-import 'winston-daily-rotate-file';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
 /** Log levels */
 const levels = {
@@ -36,7 +36,7 @@ const format = winston.format.combine(
   winston.format.printf(info => `${info.timestamp} ${info.level} ${info.message}`)
 );
 
-const transport = new winston.transports.DailyRotateFile({
+const transport: DailyRotateFile = new DailyRotateFile({
   filename: 'logs/application-%DATE%.log',
   datePattern: 'YYYY-MM-DD-HH',
   zippedArchive: true,
