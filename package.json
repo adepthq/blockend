@@ -19,6 +19,7 @@
     "dotenv": "^16.0.0",
     "ethers": "^5.5.4",
     "express": "^4.17.2",
+    "graphql-playground-middleware-express": "^1.7.23",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.1",
     "mongodb": "^4.3.1",
