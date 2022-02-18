@@ -1,9 +1,16 @@
 import express, { Request, Response } from 'express';
+import morganMiddleware from './middleware/morganMiddleware';
+import corsMiddleware from './middleware/corsMiddleware';
 // Routes
 import health from './controllers/health/router';
 import auth from './controllers/auth/router';
+import graphql from './controllers/graphql/router';
 
 const app = express();
+
+// Utility middlewares
+app.use(morganMiddleware);
+app.use(corsMiddleware);
 
 app.get('/', (_: Request, res: Response): void => {
   res.json({ message: 'Hello World' });
@@ -11,6 +18,7 @@ app.get('/', (_: Request, res: Response): void => {
 
 app.use('/v1/health', health);
 app.use('/v1/auth', auth);
+app.use('/v1/graphql', graphql);
 
 /** 404 Handling */
 app.use((_: Request, res: Response) => {
