@@ -39,11 +39,13 @@ services:
     restart: unless-stopped
     ports:
       - 27017:27017
+    networks:
+      - blockheads
     env_file: .env
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE}
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: blockheads
 
   
   # nginx:

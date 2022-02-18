@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb';
 import { Database } from '../config';
+import Logger from './logger';
 
 let client: MongoClient | null = null;
 
@@ -8,10 +9,9 @@ const connect = async (): Promise<MongoClient> => {
     await client.close();
   }
 
-  const { username, password, host, port } = Database;
-
-  const uri = `mongodb://${username}:${password}@${host}:${port}/`;
-  client = new MongoClient(uri);
+  const { connstr } = Database;
+  Logger.info(`Connecting to MongoDB: ${connstr}`);
+  client = new MongoClient(connstr);
 
   return client.connect();
 };
