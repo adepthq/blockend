@@ -8,6 +8,7 @@ import {
   CharacterDocument,
   statsTree,
   CharacterStatsMinMax,
+  NewBlockHeadCreated,
 } from '../models/character';
 import Logger from '../lib/logger';
 import mongoclient from '../lib/mongoclient';
@@ -79,17 +80,18 @@ const getCharacterStats = async (
   };
 };
 
-const generateCharacterMetaData = async (tokenId: BigNumber): Promise<CharacterDocument> => {
+const generateCharacterMetaData = async (event: NewBlockHeadCreated): Promise<CharacterDocument> => {
   const type = getCharacterType();
   const rarity = getCharacterRarity();
   const classType = getCharacterClass();
 
   const stats: CharacterStats = await getCharacterStats(rarity, classType);
 
-  Logger.info(`Generating Character for tokenId: ${tokenId} - ${type}`);
+  Logger.info(`Generating Character for tokenId: ${event.tokenId} - ${type}`);
 
   const character: CharacterDocument = {
-    tokenId: tokenId.toNumber(),
+    tokenId: event.tokenId.toNumber(),
+    owner: event.owner,
     type,
     rarity,
     class: classType,
@@ -118,13 +120,17 @@ const getCharacter = async (client: MongoClient, tokenId: BigNumber): Promise<Ch
   return character;
 };
 
-const getAllCharacters = async (): Promise<CharacterDocument[]> => {
+const getAllCharacters = async (tokenIds: number[]): Promise<CharacterDocument[]> => {
   let characters: CharacterDocument[] = [];
   try {
     const client = await mongoclient.connect();
     const collection = await getDBCollection(client);
 
-    characters = await collection.find().toArray();
+    if (tokenIds.length > 0) {
+      characters = await collection.find({ tokenId: { $in: tokenIds } }).toArray();
+    } else {
+      characters = await collection.find({}).toArray();
+    }
   } catch (error) {
     Logger.error(error);
   } finally {

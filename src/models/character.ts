@@ -1,3 +1,4 @@
+import { BigNumber } from 'ethers';
 import { ObjectId } from 'mongodb';
 
 export enum CharacterType {
@@ -29,15 +30,6 @@ export type CharacterStats = {
   agility: number;
 };
 
-export type CharacterDocument = {
-  _id?: ObjectId;
-  tokenId: number;
-  type: CharacterType[keyof CharacterType];
-  rarity: CharacterRarity[keyof CharacterRarity];
-  class: CharacterClass[keyof CharacterClass];
-  stats: CharacterStats;
-};
-
 type StatsMinMax = {
   min: number;
   max: number;
@@ -57,6 +49,21 @@ type CharacterClassTree = {
 
 type CharacterStatsTree = {
   [key: string]: CharacterClassTree;
+};
+
+export type NewBlockHeadCreated = {
+  owner: string;
+  tokenId: BigNumber;
+};
+
+export type CharacterDocument = {
+  _id?: ObjectId;
+  owner: string;
+  tokenId: number;
+  type: CharacterType[keyof CharacterType];
+  rarity: CharacterRarity[keyof CharacterRarity];
+  class: CharacterClass[keyof CharacterClass];
+  stats: CharacterStats;
 };
 
 // max stat: 100

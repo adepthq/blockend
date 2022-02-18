@@ -1,6 +1,6 @@
 import { BigNumber, ethers, EventFilter, Event } from 'ethers';
 import { MongoClient } from 'mongodb';
-import { CharacterDocument } from '../models/character';
+import { CharacterDocument, NewBlockHeadCreated } from '../models/character';
 import { Blockchain } from '../config';
 import Logger from '../lib/logger';
 import Character from './characters';
@@ -31,34 +31,34 @@ const logScraper = async (
 
 const processTokenRecursively = async (
   client: MongoClient,
-  tokenIds: BigNumber[],
+  events: NewBlockHeadCreated[],
   characters: CharacterDocument[]
 ): Promise<CharacterDocument[]> => {
-  if (tokenIds.length === 0) {
+  if (events.length === 0) {
     return characters;
   }
 
-  const tokenId = tokenIds.pop();
-  Logger.info(`Processing tokenId: ${tokenId}`);
+  const event = events.pop();
+  Logger.info(`Processing tokenId: ${event?.tokenId}`);
 
-  if (!tokenId) {
-    return processTokenRecursively(client, tokenIds, characters);
+  if (!event?.tokenId) {
+    return processTokenRecursively(client, events, characters);
   }
 
-  const character = await Character.getCharacter(client, tokenId);
+  const character = await Character.getCharacter(client, event.tokenId);
   if (character) {
     Logger.info(`Character already exists: ${character.tokenId}`);
-    return processTokenRecursively(client, tokenIds, characters);
+    return processTokenRecursively(client, events, characters);
   }
 
   // Create the metadata for the token
-  Logger.info(`No Record of character: ${tokenId}`);
-  Logger.info(`Generating Meta for Character: ${tokenId}`);
+  Logger.info(`No Record of character: ${event.tokenId}`);
+  Logger.info(`Generating Meta for Character: ${event.tokenId}`);
 
-  const newCharacter = await Character.generateCharacterMetaData(tokenId);
+  const newCharacter = await Character.generateCharacterMetaData(event);
   characters.push(newCharacter);
 
-  return processTokenRecursively(client, tokenIds, characters);
+  return processTokenRecursively(client, events, characters);
 };
 
 const syncDataFromBlockchain = async (readOnlyContract: ethers.Contract) => {
@@ -69,7 +69,7 @@ const syncDataFromBlockchain = async (readOnlyContract: ethers.Contract) => {
   const logs = await logScraper(readOnlyContract, eventFilter, firstBlock, lastBlock, []);
 
   Logger.info(`Found ${logs.length} new block heads`);
-  const tokenIds = logs.map(i => i.args?.tokenId);
+  const tokenIds = logs.map(i => ({ tokenId: i.args?.tokenId, owner: i.args?.owner }));
 
   try {
     const client = await mongoclient.connect();
@@ -86,10 +86,10 @@ const syncDataFromBlockchain = async (readOnlyContract: ethers.Contract) => {
   }
 };
 
-const generateNewCharacter = async (tokenId: BigNumber) => {
+const generateNewCharacter = async (event: NewBlockHeadCreated) => {
   try {
     const client = await mongoclient.connect();
-    const newlyMintedCharacter = await Character.generateCharacterMetaData(tokenId);
+    const newlyMintedCharacter = await Character.generateCharacterMetaData(event);
     await Character.saveCharacters(client, [newlyMintedCharacter]);
   } catch (error) {
     Logger.error(error);
@@ -108,7 +108,10 @@ const main = async () => {
   // listen to events
   readOnlyContract.on('NewBlockHeadCreated', (owner: string, tokenId: BigNumber) => {
     Logger.info(`NewBlockHeadCreated: ${owner} ${tokenId}`);
-    generateNewCharacter(tokenId);
+    generateNewCharacter({
+      owner,
+      tokenId,
+    });
   });
 };
 

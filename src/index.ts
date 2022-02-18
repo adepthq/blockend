@@ -30,7 +30,7 @@ async function main() {
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
     introspection: true,
     context: ({ req }) => ({
-      user: req.user,
+      request: req,
     }),
   });
 
