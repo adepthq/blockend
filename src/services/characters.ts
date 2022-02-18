@@ -1,4 +1,4 @@
-import { Collection } from 'mongodb';
+import { Collection, MongoClient } from 'mongodb';
 import { BigNumber } from 'ethers';
 import {
   CharacterType,
@@ -9,11 +9,9 @@ import {
   statsTree,
   CharacterStatsMinMax,
 } from '../models/character';
-import mongoclient from '../lib/mongoclient';
 import Logger from '../lib/logger';
 
-const getDBCollection = async (): Promise<Collection<Character>> => {
-  const client = await mongoclient.connect();
+const getDBCollection = async (client: MongoClient): Promise<Collection<Character>> => {
   const db = client.db('blockheads');
   const collection = db.collection<Character>('characters');
 
@@ -102,33 +100,20 @@ const generateCharacterMetaData = async (tokenId: BigNumber): Promise<Character>
   };
 };
 
-const saveCharacters = async (characters: Character[]): Promise<Character[]> => {
-  try {
-    const collection = await getDBCollection();
-    const newCharacters = await collection.insertMany(characters);
+const saveCharacters = async (client: MongoClient, characters: Character[]): Promise<Character[]> => {
+  const collection = await getDBCollection(client);
+  const newCharacters = await collection.insertMany(characters);
 
-    Logger.info(`New Characters Created: `, newCharacters.insertedCount);
-  } catch (error) {
-    Logger.info(error);
-    throw new Error("Couldn't save characters");
-  } finally {
-    mongoclient.disconnect();
-  }
+  Logger.info(`New Characters Created: `, newCharacters.insertedCount);
 
   return characters;
 };
 
-const getCharacter = async (tokenId: BigNumber): Promise<Character | null> => {
-  try {
-    const collection = await getDBCollection();
-    const character = await collection.findOne({ tokenId: tokenId.toNumber() });
+const getCharacter = async (client: MongoClient, tokenId: BigNumber): Promise<Character | null> => {
+  const collection = await getDBCollection(client);
+  const character = await collection.findOne({ tokenId: tokenId.toNumber() });
 
-    return character;
-  } catch (error) {
-    return null;
-  } finally {
-    mongoclient.disconnect();
-  }
+  return character;
 };
 
 export default {

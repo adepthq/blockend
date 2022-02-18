@@ -1,8 +1,10 @@
 import { BigNumber, ethers, EventFilter, Event } from 'ethers';
+import { MongoClient } from 'mongodb';
 import { Character as CharacterModel } from '../models/character';
 import { Blockchain } from '../config';
 import Logger from '../lib/logger';
-import Character from './character';
+import Character from './characters';
+import mongoclient from '../lib/mongoclient';
 
 const characterAddress = Blockchain.characterNFTAddress;
 const provider = new ethers.providers.JsonRpcProvider(Blockchain.rpc);
@@ -28,6 +30,7 @@ const logScraper = async (
 };
 
 const processTokenRecursively = async (
+  client: MongoClient,
   tokenIds: BigNumber[],
   characters: CharacterModel[]
 ): Promise<CharacterModel[]> => {
@@ -39,13 +42,13 @@ const processTokenRecursively = async (
   Logger.info(`Processing tokenId: ${tokenId}`);
 
   if (!tokenId) {
-    return processTokenRecursively(tokenIds, characters);
+    return processTokenRecursively(client, tokenIds, characters);
   }
 
-  const character = await Character.getCharacter(tokenId);
+  const character = await Character.getCharacter(client, tokenId);
   if (character) {
     Logger.info(`Character already exists: ${character.tokenId}`);
-    return processTokenRecursively(tokenIds, characters);
+    return processTokenRecursively(client, tokenIds, characters);
   }
 
   // Create the metadata for the token
@@ -55,7 +58,7 @@ const processTokenRecursively = async (
   const newCharacter = await Character.generateCharacterMetaData(tokenId);
   characters.push(newCharacter);
 
-  return processTokenRecursively(tokenIds, characters);
+  return processTokenRecursively(client, tokenIds, characters);
 };
 
 const main = async () => {
@@ -67,18 +70,25 @@ const main = async () => {
   const eventFilter = readOnlyContract.filters.NewBlockHeadCreated();
 
   const firstBlock = 24995108;
-  const lastBlock = 24998997;
+  const lastBlock = 25024320;
   const logs = await logScraper(readOnlyContract, eventFilter, firstBlock, lastBlock, []);
 
   Logger.info(`Found ${logs.length} new block heads`);
   const tokenIds = logs.map(i => i.args?.tokenId);
   Logger.info(`Found ${tokenIds.length} new tokenIds`);
 
-  const characters = await processTokenRecursively(tokenIds, []);
+  try {
+    const client = await mongoclient.connect();
+    const characters = await processTokenRecursively(client, tokenIds, []);
 
-  if (characters.length > 0) {
-    Logger.info(`Saving ${characters.length} new characters`);
-    await Character.saveCharacters(characters);
+    if (characters.length > 0) {
+      Logger.info(`Saving ${characters.length} new characters`);
+      await Character.saveCharacters(client, characters);
+    }
+  } catch (error) {
+    Logger.error(error);
+  } finally {
+    mongoclient.disconnect();
   }
 
   // }
