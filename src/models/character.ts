@@ -29,7 +29,7 @@ export type CharacterStats = {
   agility: number;
 };
 
-export type Character = {
+export type CharacterDocument = {
   _id?: ObjectId;
   tokenId: number;
   type: CharacterType[keyof CharacterType];

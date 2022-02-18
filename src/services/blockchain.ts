@@ -1,6 +1,6 @@
 import { BigNumber, ethers, EventFilter, Event } from 'ethers';
 import { MongoClient } from 'mongodb';
-import { Character as CharacterModel } from '../models/character';
+import { CharacterDocument } from '../models/character';
 import { Blockchain } from '../config';
 import Logger from '../lib/logger';
 import Character from './characters';
@@ -32,8 +32,8 @@ const logScraper = async (
 const processTokenRecursively = async (
   client: MongoClient,
   tokenIds: BigNumber[],
-  characters: CharacterModel[]
-): Promise<CharacterModel[]> => {
+  characters: CharacterDocument[]
+): Promise<CharacterDocument[]> => {
   if (tokenIds.length === 0) {
     return characters;
   }

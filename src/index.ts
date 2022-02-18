@@ -29,6 +29,9 @@ async function main() {
     resolvers,
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
     introspection: true,
+    context: ({ req }) => ({
+      user: req.user,
+    }),
   });
 
   await apolloServer.start();

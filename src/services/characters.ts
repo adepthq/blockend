@@ -5,16 +5,16 @@ import {
   CharacterRarity,
   CharacterStats,
   CharacterClass,
-  Character,
+  CharacterDocument,
   statsTree,
   CharacterStatsMinMax,
 } from '../models/character';
 import Logger from '../lib/logger';
 import mongoclient from '../lib/mongoclient';
 
-const getDBCollection = async (client: MongoClient): Promise<Collection<Character>> => {
+const getDBCollection = async (client: MongoClient): Promise<Collection<CharacterDocument>> => {
   const db = client.db('blockheads');
-  const collection = db.collection<Character>('characters');
+  const collection = db.collection<CharacterDocument>('characters');
 
   return collection;
 };
@@ -79,7 +79,7 @@ const getCharacterStats = async (
   };
 };
 
-const generateCharacterMetaData = async (tokenId: BigNumber): Promise<Character> => {
+const generateCharacterMetaData = async (tokenId: BigNumber): Promise<CharacterDocument> => {
   const type = getCharacterType();
   const rarity = getCharacterRarity();
   const classType = getCharacterClass();
@@ -88,7 +88,7 @@ const generateCharacterMetaData = async (tokenId: BigNumber): Promise<Character>
 
   Logger.info(`Generating Character for tokenId: ${tokenId} - ${type}`);
 
-  const character: Character = {
+  const character: CharacterDocument = {
     tokenId: tokenId.toNumber(),
     type,
     rarity,
@@ -101,7 +101,7 @@ const generateCharacterMetaData = async (tokenId: BigNumber): Promise<Character>
   };
 };
 
-const saveCharacters = async (client: MongoClient, characters: Character[]): Promise<Character[]> => {
+const saveCharacters = async (client: MongoClient, characters: CharacterDocument[]): Promise<CharacterDocument[]> => {
   const collection = await getDBCollection(client);
   const newCharacters = await collection.insertMany(characters);
 
@@ -111,15 +111,15 @@ const saveCharacters = async (client: MongoClient, characters: Character[]): Pro
   return characters;
 };
 
-const getCharacter = async (client: MongoClient, tokenId: BigNumber): Promise<Character | null> => {
+const getCharacter = async (client: MongoClient, tokenId: BigNumber): Promise<CharacterDocument | null> => {
   const collection = await getDBCollection(client);
   const character = await collection.findOne({ tokenId: tokenId.toNumber() });
 
   return character;
 };
 
-const getAllCharacters = async (): Promise<Character[]> => {
-  let characters: Character[] = [];
+const getAllCharacters = async (): Promise<CharacterDocument[]> => {
+  let characters: CharacterDocument[] = [];
   try {
     const client = await mongoclient.connect();
     const collection = await getDBCollection(client);
