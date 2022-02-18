@@ -61,12 +61,7 @@ const processTokenRecursively = async (
   return processTokenRecursively(client, tokenIds, characters);
 };
 
-const main = async () => {
-  Logger.info('Indexer Started');
-  const readOnlyContract = new ethers.Contract(characterAddress, characterABI, provider);
-
-  // crawl the smart contract and get all the tokenIds
-  // const NewBlockHeadCreated = await readOnlyContract.interface.events.NewBlockHeadCreated;
+const syncDataFromBlockchain = async (readOnlyContract: ethers.Contract) => {
   const eventFilter = readOnlyContract.filters.NewBlockHeadCreated();
 
   const firstBlock = 24995108;
@@ -90,14 +85,31 @@ const main = async () => {
   } finally {
     mongoclient.disconnect();
   }
+};
 
-  // }
+const generateNewCharacter = async (tokenId: BigNumber) => {
+  try {
+    const client = await mongoclient.connect();
+    const newlyMintedCharacter = await Character.generateCharacterMetaData(tokenId);
+    await Character.saveCharacters(client, [newlyMintedCharacter]);
+  } catch (error) {
+    Logger.error(error);
+  } finally {
+    mongoclient.disconnect();
+  }
+};
+
+const main = async () => {
+  Logger.info('Indexer Started');
+  const readOnlyContract = new ethers.Contract(characterAddress, characterABI, provider);
+
+  // Sync the blockchain
+  await syncDataFromBlockchain(readOnlyContract);
 
   // listen to events
   readOnlyContract.on('NewBlockHeadCreated', (owner: string, tokenId: BigNumber) => {
     Logger.info(`NewBlockHeadCreated: ${owner} ${tokenId}`);
-    // Create the metadata for the token and store to mongodb
-    Character.generateCharacterMetaData(tokenId);
+    generateNewCharacter(owner, tokenId);
   });
 };
 

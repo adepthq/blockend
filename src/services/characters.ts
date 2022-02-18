@@ -104,7 +104,7 @@ const saveCharacters = async (client: MongoClient, characters: Character[]): Pro
   const collection = await getDBCollection(client);
   const newCharacters = await collection.insertMany(characters);
 
-  Logger.info(`New Characters Created: `, newCharacters.insertedCount);
+  Logger.info(`New Characters Created: `, newCharacters.insertedIds);
 
   return characters;
 };
