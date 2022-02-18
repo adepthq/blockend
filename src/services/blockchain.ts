@@ -109,7 +109,7 @@ const main = async () => {
   // listen to events
   readOnlyContract.on('NewBlockHeadCreated', (owner: string, tokenId: BigNumber) => {
     Logger.info(`NewBlockHeadCreated: ${owner} ${tokenId}`);
-    generateNewCharacter(owner, tokenId);
+    generateNewCharacter(tokenId);
   });
 };
 
