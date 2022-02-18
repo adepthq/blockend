@@ -13,7 +13,12 @@ const books = [
 
 const characterResolvers = {
   Query: {
-    characters: () => Characters.getAllCharacters(),
+    characters: (parent: any, args: any) => {
+      console.log('parent', parent);
+      console.log('args', args);
+
+      return Characters.getAllCharacters(args.tokenIds);
+    },
   },
 };
 

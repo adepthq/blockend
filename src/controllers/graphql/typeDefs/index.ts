@@ -21,7 +21,7 @@ const characterTypeDefs = gql`
   }
 
   type Query {
-    characters: [Character]
+    characters(tokenIds: [Int] = []): [Character]
   }
 `;
 
