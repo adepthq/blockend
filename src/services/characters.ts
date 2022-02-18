@@ -120,17 +120,44 @@ const getCharacter = async (client: MongoClient, tokenId: BigNumber): Promise<Ch
   return character;
 };
 
-const getAllCharacters = async (tokenIds: number[]): Promise<CharacterDocument[]> => {
+type CharacterFilter = {
+  limit: number;
+  offset: number;
+  where: any;
+  orderBy: any;
+};
+
+const getAllCharacters = async (filters: CharacterFilter): Promise<CharacterDocument[]> => {
   let characters: CharacterDocument[] = [];
+
   try {
     const client = await mongoclient.connect();
     const collection = await getDBCollection(client);
 
-    if (tokenIds.length > 0) {
-      characters = await collection.find({ tokenId: { $in: tokenIds } }).toArray();
-    } else {
-      characters = await collection.find({}).toArray();
+    const query = filters.where;
+    // check if there is a stats filter
+    if (query.stats) {
+      const statsFilter = query.stats;
+      delete query.stats;
+
+      Object.keys(statsFilter).forEach(key => {
+        query[`stats.${key}`] = statsFilter[key];
+      });
     }
+
+    console.log('query', query);
+
+    let cursor = await collection.find(query);
+
+    if (filters.limit) {
+      cursor = cursor.limit(filters.limit);
+    }
+
+    if (filters.offset) {
+      cursor = cursor.skip(filters.offset);
+    }
+
+    characters = await cursor.toArray();
   } catch (error) {
     Logger.error(error);
   } finally {

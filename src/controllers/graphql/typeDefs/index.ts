@@ -1,6 +1,5 @@
 import { gql } from 'apollo-server-express';
-
-// const filterTypeDefs = gql``;
+import inputComparisonTypeDefs from './baseTypeComparison';
 
 const characterTypeDefs = gql`
   type CharacterStats {
@@ -13,6 +12,7 @@ const characterTypeDefs = gql`
 
   type Character {
     _id: ID!
+    owner: String!
     tokenId: Int!
     type: String!
     rarity: String!
@@ -20,8 +20,36 @@ const characterTypeDefs = gql`
     stats: CharacterStats!
   }
 
+  input CharacterStats_bool_exp {
+    vitality: Int_comparison_exp
+    strength: Int_comparison_exp
+    defense: Int_comparison_exp
+    morale: Int_comparison_exp
+    agility: Int_comparison_exp
+  }
+
+  input Character_bool_exp {
+    _and: [Character_bool_exp!]
+    _or: [Character_bool_exp!]
+    _not: Character_bool_exp
+    tokenId: Int_comparison_exp
+    type: String_comparison_exp
+    rarity: String_comparison_exp
+    class: String_comparison_exp
+    stats: CharacterStats_bool_exp
+    owner: String_comparison_exp
+  }
+
+  input Character_order_by {
+    _id: order_by
+    tokenId: order_by
+    type: order_by
+    rarity: order_by
+    class: order_by
+  }
+
   type Query {
-    characters(tokenIds: [Int] = []): [Character]
+    characters(limit: Int, offset: Int, orderBy: [Character_order_by], where: [Character_bool_exp]): [Character]
   }
 `;
 
@@ -43,6 +71,6 @@ const typeDefs = gql`
 `;
 
 // combine typedefs
-const finalTypeDefs = [characterTypeDefs, typeDefs];
+const finalTypeDefs = [inputComparisonTypeDefs, characterTypeDefs, typeDefs];
 
 export default finalTypeDefs;
