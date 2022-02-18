@@ -70,7 +70,6 @@ const syncDataFromBlockchain = async (readOnlyContract: ethers.Contract) => {
 
   Logger.info(`Found ${logs.length} new block heads`);
   const tokenIds = logs.map(i => i.args?.tokenId);
-  Logger.info(`Found ${tokenIds.length} new tokenIds`);
 
   try {
     const client = await mongoclient.connect();
