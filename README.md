@@ -11,6 +11,9 @@ A simple experiment of creating a backend that connects and syncs data from a bl
 - SocketIO
 - Docker
 
+### Information
+- Graphql Endpoint and Playground: http://localhost:3001/v1/graphql/
+
 ### Setting up the project
 Guide coming soon
 
