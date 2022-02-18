@@ -10,6 +10,7 @@ import {
   CharacterStatsMinMax,
 } from '../models/character';
 import Logger from '../lib/logger';
+import mongoclient from '../lib/mongoclient';
 
 const getDBCollection = async (client: MongoClient): Promise<Collection<Character>> => {
   const db = client.db('blockheads');
@@ -117,8 +118,25 @@ const getCharacter = async (client: MongoClient, tokenId: BigNumber): Promise<Ch
   return character;
 };
 
+const getAllCharacters = async (): Promise<Character[]> => {
+  let characters: Character[] = [];
+  try {
+    const client = await mongoclient.connect();
+    const collection = await getDBCollection(client);
+
+    characters = await collection.find().toArray();
+  } catch (error) {
+    Logger.error(error);
+  } finally {
+    mongoclient.disconnect();
+  }
+
+  return characters;
+};
+
 export default {
   generateCharacterMetaData,
   getCharacter,
+  getAllCharacters,
   saveCharacters,
 };

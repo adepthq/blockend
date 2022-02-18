@@ -1,5 +1,30 @@
 import { gql } from 'apollo-server-express';
 
+// const filterTypeDefs = gql``;
+
+const characterTypeDefs = gql`
+  type CharacterStats {
+    vitality: Int!
+    strength: Int!
+    defense: Int!
+    morale: Int!
+    agility: Int!
+  }
+
+  type Character {
+    _id: ID!
+    tokenId: Int!
+    type: String!
+    rarity: String!
+    class: String!
+    stats: CharacterStats!
+  }
+
+  type Query {
+    characters: [Character]
+  }
+`;
+
 const typeDefs = gql`
   # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
 
@@ -17,4 +42,7 @@ const typeDefs = gql`
   }
 `;
 
-export default typeDefs;
+// combine typedefs
+const finalTypeDefs = [characterTypeDefs, typeDefs];
+
+export default finalTypeDefs;
