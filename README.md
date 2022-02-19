@@ -1,17 +1,23 @@
 ## Blockend
 A simple experiment of creating a backend that connects and syncs data from a blockchain smart contract and saves it inside mongodb
 
-### Technology Used
-- NodeJS
-- TypeScript
-- RabbitMQ
-- MongoDB
-- ExpressJS
-- SocketIO
-- Docker
-- GraphQL
-- Apollo Server
-- Winston and Morgan
+### TODO
+- [x] NodeJS
+- [x] TypeScript
+- [ ] RabbitMQ
+- [x] MongoDB
+- [x] ExpressJS
+- [ ] SocketIO
+- [x] Docker
+- [x] GraphQL
+- [x] Apollo Server
+- [x] Winston and Morgan
+- [ ] Cache
+- [ ] Redis
+- [ ] gRPC
+- [ ] Turbo Repo
+
+
 
 ### Demo
 - http://blockheads.metasekai.xyz/
