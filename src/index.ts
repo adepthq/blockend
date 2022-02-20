@@ -41,7 +41,7 @@ async function main() {
     path: '/v1/graphql',
     cors: {
       origin: (origin, callback) => {
-        const whitelist = ['http://localhost:3000', 'https://studio.apollographql.com'];
+        const whitelist = ['http://localhost:3000', 'https://studio.apollographql.com', 'https://*.metasekai.xyz/'];
         if (whitelist.indexOf(origin || '') !== -1 || !origin) {
           callback(null, true);
         } else {
