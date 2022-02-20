@@ -8,12 +8,15 @@
     "build": "tsc -p .",
     "dev": "nodemon --exec ts-node ./src/index.ts",
     "start-indexer": "ts-node ./src/services/blockchain.ts",
+    "start-grpc": "ts-node ./src/grpcServer.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@grpc/grpc-js": "^1.5.5",
+    "@grpc/proto-loader": "^0.6.9",
     "apollo-server-core": "^3.6.3",
     "apollo-server-express": "^3.6.3",
     "bcryptjs": "^2.4.3",
