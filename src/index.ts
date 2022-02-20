@@ -35,11 +35,13 @@ async function main() {
   });
 
   await apolloServer.start();
+
+  const whitelist = ['http://localhost:3000', 'htps://studio.apollographqlt.com'];
   apolloServer.applyMiddleware({
     app,
     path: '/v1/graphql',
     cors: {
-      origin: 'https://studio.apollographql.com',
+      origin: whitelist,
       credentials: true,
     },
   });
