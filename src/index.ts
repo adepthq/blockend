@@ -44,7 +44,7 @@ async function main() {
         const whitelist = [
           'http://localhost:3000',
           'https://studio.apollographql.com',
-          'https://blockheads.metasekai.xyz/',
+          'https://blockheads.metasekai.xyz',
         ];
         if (whitelist.indexOf(origin || '') !== -1 || !origin) {
           callback(null, true);
