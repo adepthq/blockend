@@ -1,5 +1,4 @@
 import { BigNumber } from 'ethers';
-import { ObjectId } from 'mongodb';
 
 export enum CharacterType {
   Neutral = 'Neutral',
@@ -57,9 +56,8 @@ export type NewBlockHeadCreated = {
 };
 
 export type CharacterDocument = {
-  _id?: ObjectId;
+  _id?: number;
   owner: string;
-  tokenId: number;
   type: CharacterType[keyof CharacterType];
   rarity: CharacterRarity[keyof CharacterRarity];
   class: CharacterClass[keyof CharacterClass];

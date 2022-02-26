@@ -13,7 +13,6 @@ const characterTypeDefs = gql`
   type Character {
     _id: ID!
     owner: String!
-    tokenId: Int!
     type: String!
     rarity: String!
     class: String!
@@ -32,7 +31,7 @@ const characterTypeDefs = gql`
     _and: [Character_bool_exp!]
     _or: [Character_bool_exp!]
     _not: Character_bool_exp
-    tokenId: Int_comparison_exp
+    _id: Int_comparison_exp
     type: String_comparison_exp
     rarity: String_comparison_exp
     class: String_comparison_exp
@@ -42,7 +41,6 @@ const characterTypeDefs = gql`
 
   input Character_order_by {
     _id: order_by
-    tokenId: order_by
     type: order_by
     rarity: order_by
     class: order_by

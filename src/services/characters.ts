@@ -90,7 +90,7 @@ const generateCharacterMetaData = async (event: NewBlockHeadCreated): Promise<Ch
   Logger.info(`Generating Character for tokenId: ${event.tokenId} - ${type}`);
 
   const character: CharacterDocument = {
-    tokenId: event.tokenId.toNumber(),
+    _id: event.tokenId.toNumber(),
     owner: event.owner,
     type,
     rarity,

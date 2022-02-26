@@ -47,7 +47,8 @@ const processTokenRecursively = async (
 
   const character = await Character.getCharacter(client, event.tokenId);
   if (character) {
-    Logger.info(`Character already exists: ${character.tokenId}`);
+    // eslint-disable-next-line no-underscore-dangle
+    Logger.info(`Character already exists: ${character._id}`);
     return processTokenRecursively(client, events, characters);
   }
 
@@ -61,7 +62,7 @@ const processTokenRecursively = async (
   return processTokenRecursively(client, events, characters);
 };
 
-const syncDataFromBlockchain = async (readOnlyContract: ethers.Contract) => {
+const syncDataFromBlockchain = async (client: MongoClient, readOnlyContract: ethers.Contract) => {
   const eventFilter = readOnlyContract.filters.NewBlockHeadCreated();
 
   const firstBlock = 24995108;
@@ -71,48 +72,41 @@ const syncDataFromBlockchain = async (readOnlyContract: ethers.Contract) => {
   Logger.info(`Found ${logs.length} new block heads`);
   const tokenIds = logs.map(i => ({ tokenId: i.args?.tokenId, owner: i.args?.owner }));
 
-  try {
-    const client = await mongoclient.connect();
-    const characters = await processTokenRecursively(client, tokenIds, []);
+  const characters = await processTokenRecursively(client, tokenIds, []);
 
-    if (characters.length > 0) {
-      Logger.info(`Saving ${characters.length} new characters`);
-      await Character.saveCharacters(client, characters);
-    }
-  } catch (error) {
-    Logger.error(error);
-  } finally {
-    mongoclient.disconnect();
+  if (characters.length > 0) {
+    Logger.info(`Saving ${characters.length} new characters`);
+    await Character.saveCharacters(client, characters);
   }
 };
 
-const generateNewCharacter = async (event: NewBlockHeadCreated) => {
-  try {
-    const client = await mongoclient.connect();
-    const newlyMintedCharacter = await Character.generateCharacterMetaData(event);
-    await Character.saveCharacters(client, [newlyMintedCharacter]);
-  } catch (error) {
-    Logger.error(error);
-  } finally {
-    mongoclient.disconnect();
-  }
+const generateNewCharacter = async (client: MongoClient, event: NewBlockHeadCreated) => {
+  const newlyMintedCharacter = await Character.generateCharacterMetaData(event);
+  await Character.saveCharacters(client, [newlyMintedCharacter]);
 };
 
 const main = async () => {
   Logger.info('Indexer Started');
-  const readOnlyContract = new ethers.Contract(characterAddress, characterABI, provider);
+  try {
+    const client = await mongoclient.connect();
+    const readOnlyContract = new ethers.Contract(characterAddress, characterABI, provider);
 
-  // Sync the blockchain
-  await syncDataFromBlockchain(readOnlyContract);
+    // Sync the blockchain
+    await syncDataFromBlockchain(client, readOnlyContract);
 
-  // listen to events
-  readOnlyContract.on('NewBlockHeadCreated', (owner: string, tokenId: BigNumber) => {
-    Logger.info(`NewBlockHeadCreated: ${owner} ${tokenId}`);
-    generateNewCharacter({
-      owner,
-      tokenId,
+    // listen to events
+    readOnlyContract.on('NewBlockHeadCreated', (owner: string, tokenId: BigNumber) => {
+      Logger.info(`NewBlockHeadCreated: ${owner} ${tokenId}`);
+      generateNewCharacter(client, {
+        owner,
+        tokenId,
+      });
     });
-  });
+  } catch (error) {
+    Logger.error(error);
+  } finally {
+    mongoclient.disconnect();
+  }
 };
 
 main().catch(console.error);
